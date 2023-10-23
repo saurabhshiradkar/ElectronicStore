@@ -7,6 +7,10 @@ import com.developedbysaurabh.electronic.store.repositories.UserRepository;
 import com.developedbysaurabh.electronic.store.services.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -63,11 +67,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> getAllUser() {
+    public List<UserDto> getAllUser(int pageNumber, int pageSize, String sortBy, String sortDir) {
 
-        List<User> users = userRepository.findAll();
+        Sort sort = (sortDir.equalsIgnoreCase("desc")?Sort.by(sortBy).descending():Sort.by(sortBy).ascending());
 
-        List<UserDto> userDtoList = users.stream().map(user -> entityToDto(user)).collect(Collectors.toList());
+        Pageable pageable = PageRequest.of(pageNumber,pageSize,sort);
+
+        Page<User> page = userRepository.findAll(pageable);
+
+        List<User> usersList = page.getContent();
+
+        List<UserDto> userDtoList = usersList.stream().map(user -> entityToDto(user)).collect(Collectors.toList());
 
         return userDtoList;
     }
