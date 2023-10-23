@@ -30,12 +30,13 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements UserService {
 
-
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
     private ModelMapper mapper;
+    @Autowired
+    public UserServiceImpl(UserRepository userRepository, ModelMapper mapper) {
+        this.userRepository = userRepository;
+        this.mapper = mapper;
+    }
 
     private Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 

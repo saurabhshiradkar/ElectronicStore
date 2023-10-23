@@ -19,24 +19,21 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
-
-    @Autowired
     private UserService userService;
+    private FileService fileService;
 
     @Autowired
-    private FileService fileService;
+    public UserController(UserService userService, FileService fileService) {
+        this.userService = userService;
+        this.fileService = fileService;
+    }
 
     private Logger logger = LoggerFactory.getLogger(UserController.class);
 
@@ -108,7 +105,7 @@ public class UserController {
 
     //upload user image
     @PostMapping("/image/{userId}")
-    public ResponseEntity<ImageResponse> uploadUserImage(@RequestParam("userImage")MultipartFile image, @PathVariable("userId") String userId) throws IOException {
+    public ResponseEntity<ImageResponse> uploadUserImage(@RequestParam("image")MultipartFile image, @PathVariable("userId") String userId) throws IOException {
 
         String imageName = fileService.uploadFile(image, imageUploadPath);
 
