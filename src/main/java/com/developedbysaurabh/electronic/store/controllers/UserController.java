@@ -1,14 +1,31 @@
 package com.developedbysaurabh.electronic.store.controllers;
 
 import com.developedbysaurabh.electronic.store.dtos.ApiResponseMessage;
+import com.developedbysaurabh.electronic.store.dtos.ImageResponse;
+import com.developedbysaurabh.electronic.store.dtos.PageableResponse;
 import com.developedbysaurabh.electronic.store.dtos.UserDto;
+import com.developedbysaurabh.electronic.store.services.FileService;
 import com.developedbysaurabh.electronic.store.services.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -18,6 +35,13 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private FileService fileService;
+
+    private Logger logger = LoggerFactory.getLogger(UserController.class);
+
+    @Value("${user.profile.image.path}")
+    private String imageUploadPath;
 
     //create
     @PostMapping
@@ -56,8 +80,13 @@ public class UserController {
 
     //get all
     @GetMapping
-    public ResponseEntity<List<UserDto>> getAllUsers(){
-        return new ResponseEntity<>(userService.getAllUser(),HttpStatus.OK);
+    public ResponseEntity<PageableResponse<UserDto>> getAllUsers(
+            @RequestParam(value = "pageNumber", defaultValue = "0",required = false ) int pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = "name", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
+    ){
+        return new ResponseEntity<>(userService.getAllUser(pageNumber,pageSize,sortBy,sortDir),HttpStatus.OK);
     }
 
     //get single
@@ -76,4 +105,39 @@ public class UserController {
     public ResponseEntity<List<UserDto>> searchUser(@PathVariable String keyword){
         return new ResponseEntity<>(userService.searchUser(keyword),HttpStatus.OK);
     }
+
+    //upload user image
+    @PostMapping("/image/{userId}")
+    public ResponseEntity<ImageResponse> uploadUserImage(@RequestParam("userImage")MultipartFile image, @PathVariable("userId") String userId) throws IOException {
+
+        String imageName = fileService.uploadFile(image, imageUploadPath);
+
+        UserDto userDto = userService.getUserById(userId);
+        userDto.setImageName(imageName);
+        userService.updateUser(userDto,userId);
+
+        ImageResponse imageResponse = ImageResponse.builder()
+                .imageName(imageName)
+                .message("Image Uploaded Successfully")
+                .success(true)
+                .status(HttpStatus.CREATED)
+                .build();
+
+        return new ResponseEntity<>(imageResponse,HttpStatus.CREATED);
+    }
+
+    //serve user image
+
+    @GetMapping("/image/{userId}")
+    public void serveUserImage(@PathVariable String userId, HttpServletResponse response) throws IOException {
+
+        UserDto userDto = userService.getUserById(userId);
+        logger.info("User image name : {}",userDto.getImageName());
+        InputStream resource = fileService.getResource(imageUploadPath, userDto.getImageName());
+
+        response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+        StreamUtils.copy(resource,response.getOutputStream());
+
+    }
+
 }
