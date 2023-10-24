@@ -31,6 +31,8 @@ public class CategoryServiceImpl implements CategoryService {
     private CategoryRepository categoryRepository;
     private ModelMapper mapper;
 
+    private Logger logger = LoggerFactory.getLogger(CategoryServiceImpl.class);
+
     @Value("${categories.image.path}")
     private String imageUploadPath;
 
@@ -40,7 +42,7 @@ public class CategoryServiceImpl implements CategoryService {
         this.mapper = mapper;
     }
 
-    private Logger logger = LoggerFactory.getLogger(CategoryServiceImpl.class);
+
 
 
     @Override

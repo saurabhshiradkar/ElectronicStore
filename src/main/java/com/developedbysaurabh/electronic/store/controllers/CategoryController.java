@@ -25,16 +25,16 @@ public class CategoryController {
 
     private CategoryService categoryService;
     private FileService fileService;
-    @Autowired
-    public CategoryController(CategoryService categoryService, FileService fileService) {
-        this.categoryService = categoryService;
-        this.fileService = fileService;
-    }
 
     private Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @Value("${categories.image.path}")
     private String imageUploadPath;
+    @Autowired
+    public CategoryController(CategoryService categoryService, FileService fileService) {
+        this.categoryService = categoryService;
+        this.fileService = fileService;
+    }
 
 
     //create
@@ -86,7 +86,7 @@ public class CategoryController {
     }
 
     //upload category image
-    @PostMapping("/categoryCoverImage/{categoryId}")
+    @PostMapping("/image/{categoryId}")
     public ResponseEntity<ImageResponse> uploadUserImage(@RequestParam("image") MultipartFile image, @PathVariable("categoryId") String categoryId) throws IOException {
 
         String imageName = fileService.uploadFile(image, imageUploadPath);
@@ -106,7 +106,7 @@ public class CategoryController {
     }
 
     //serve Category image
-    @GetMapping("/categoryCoverImage/{categoryId}")
+    @GetMapping("/image/{categoryId}")
     public void serveCategoryImage(@PathVariable String categoryId, HttpServletResponse response) throws IOException {
 
         CategoryDto categoryDto = categoryService.get(categoryId);
