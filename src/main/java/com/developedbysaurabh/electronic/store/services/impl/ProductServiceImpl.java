@@ -1,10 +1,12 @@
 package com.developedbysaurabh.electronic.store.services.impl;
 
 import com.developedbysaurabh.electronic.store.dtos.PageableResponse;
-import com.developedbysaurabh.electronic.store.entities.Product;
 import com.developedbysaurabh.electronic.store.dtos.ProductDto;
+import com.developedbysaurabh.electronic.store.entities.Category;
+import com.developedbysaurabh.electronic.store.entities.Product;
 import com.developedbysaurabh.electronic.store.exceptions.ResourceNotFoundException;
 import com.developedbysaurabh.electronic.store.helper.Helper;
+import com.developedbysaurabh.electronic.store.repositories.CategoryRepository;
 import com.developedbysaurabh.electronic.store.repositories.ProductRepository;
 import com.developedbysaurabh.electronic.store.services.ProductService;
 import org.modelmapper.ModelMapper;
@@ -30,6 +32,8 @@ import java.util.UUID;
 public class ProductServiceImpl implements ProductService {
 
     private ProductRepository productRepository;
+
+    private CategoryRepository categoryRepository;
     private ModelMapper mapper;
 
     private Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
@@ -38,23 +42,25 @@ public class ProductServiceImpl implements ProductService {
     private String imageUploadPath;
 
     @Autowired
-    public ProductServiceImpl(ProductRepository productRepository, ModelMapper mapper) {
+    public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository, ModelMapper mapper) {
         this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
         this.mapper = mapper;
     }
 
     @Override
     public ProductDto create(ProductDto productDto) {
         //Generate Random String productId
-        String productId = UUID.randomUUID().toString();
-        productDto.setProductId(productId);
-
-        //added date
-        productDto.setAddedDate(new Date());
-
         Product product = mapper.map(productDto, Product.class);
 
+        //product id
+        String productId = UUID.randomUUID().toString();
+        product.setProductId(productId);
+
+        //added
+        product.setAddedDate(new Date());
         Product savedProduct = productRepository.save(product);
+
         return mapper.map(savedProduct,ProductDto.class);
     }
 
@@ -140,5 +146,36 @@ public class ProductServiceImpl implements ProductService {
         PageableResponse<ProductDto> pageableResponse = Helper.getPageableResponse(page, ProductDto.class);
 
         return pageableResponse;
+    }
+
+    @Override
+    public ProductDto createWithCategory(ProductDto productDto, String categoryId) {
+
+        //fetch the category
+        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("Category Not Found With Given ID !"));
+
+        Product product = mapper.map(productDto, Product.class);
+
+        //product id
+        String productId = UUID.randomUUID().toString();
+        product.setProductId(productId);
+
+        //added
+        product.setAddedDate(new Date());
+        product.setCategory(category);
+        Product savedProduct = productRepository.save(product);
+
+        return mapper.map(savedProduct,ProductDto.class);
+
+    }
+
+    @Override
+    public ProductDto updateCategory(String productId, String categoryId) {
+        //product fetch
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product Not Found With Given ID !"));
+        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("Category Not Found With Given ID !"));
+        product.setCategory(category);
+        Product updatedProduct = productRepository.save(product);
+        return mapper.map(updatedProduct,ProductDto.class);
     }
 }

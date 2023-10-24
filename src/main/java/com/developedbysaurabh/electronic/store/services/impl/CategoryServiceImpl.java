@@ -2,11 +2,14 @@ package com.developedbysaurabh.electronic.store.services.impl;
 
 import com.developedbysaurabh.electronic.store.dtos.CategoryDto;
 import com.developedbysaurabh.electronic.store.dtos.PageableResponse;
+import com.developedbysaurabh.electronic.store.dtos.ProductDto;
 import com.developedbysaurabh.electronic.store.entities.Category;
+import com.developedbysaurabh.electronic.store.entities.Product;
 import com.developedbysaurabh.electronic.store.exceptions.ResourceNotFoundException;
 import com.developedbysaurabh.electronic.store.helper.Helper;
 import com.developedbysaurabh.electronic.store.repositories.CategoryRepository;
 import com.developedbysaurabh.electronic.store.services.CategoryService;
+import com.developedbysaurabh.electronic.store.services.ProductService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,12 +26,15 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
     private CategoryRepository categoryRepository;
+
+    private ProductService productService;
     private ModelMapper mapper;
 
     private Logger logger = LoggerFactory.getLogger(CategoryServiceImpl.class);
@@ -37,8 +43,11 @@ public class CategoryServiceImpl implements CategoryService {
     private String imageUploadPath;
 
     @Autowired
-    public CategoryServiceImpl(CategoryRepository categoryRepository, ModelMapper mapper) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository, ProductService productService, ModelMapper mapper) {
         this.categoryRepository = categoryRepository;
+        this.productService = productService;
+
+
         this.mapper = mapper;
     }
 
@@ -75,6 +84,15 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void delete(String categoryId) {
         Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("Category Not Found With given ID"));
+
+        List<Product> products = category.getProducts();
+
+        //WHEN DELETING A CATEGORY DONT DELETE PRODUCTS UNDER THE CATEGORY INSTEAD UPDATE CATEGORY ID TO NULL
+        for (Product product : products){
+            product.setCategory(null);
+            ProductDto updatedProduct = mapper.map(product, ProductDto.class);
+            productService.update(updatedProduct,updatedProduct.getProductId());
+        }
 
         //delete Category Cover image
         String fullImagePath = imageUploadPath + category.getCoverImage();

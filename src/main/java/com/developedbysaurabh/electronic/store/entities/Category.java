@@ -2,16 +2,14 @@ package com.developedbysaurabh.electronic.store.entities;
 
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "categories")
 public class Category {
@@ -28,4 +26,8 @@ public class Category {
 
     @Column(name = "cover_image")
     private String coverImage;
+
+    //category can contain many products
+    @OneToMany(mappedBy = "category",fetch = FetchType.LAZY)
+    private List<Product> products = new ArrayList<>();
 }
