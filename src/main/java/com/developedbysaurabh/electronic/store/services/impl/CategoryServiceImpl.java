@@ -46,8 +46,6 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryServiceImpl(CategoryRepository categoryRepository, ProductService productService, ModelMapper mapper) {
         this.categoryRepository = categoryRepository;
         this.productService = productService;
-
-
         this.mapper = mapper;
     }
 
