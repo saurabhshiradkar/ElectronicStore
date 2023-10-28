@@ -66,6 +66,18 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiResponseMessage,HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<ApiResponseMessage> handleNullPointerException(NullPointerException ex)
+    {
+        logger.info("Global Exception Handler : NullPointerException Handler Invoked");
+        ApiResponseMessage apiResponseMessage = ApiResponseMessage.builder()
+                .message(ex.getMessage())
+                .status(HttpStatus.BAD_REQUEST)
+                .success(false)
+                .build();
+
+        return new ResponseEntity<>(apiResponseMessage,HttpStatus.BAD_REQUEST);
+    }
 
 
 }

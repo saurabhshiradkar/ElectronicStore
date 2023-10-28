@@ -2,9 +2,13 @@ package com.developedbysaurabh.electronic.store.services.impl;
 
 import com.developedbysaurabh.electronic.store.dtos.PageableResponse;
 import com.developedbysaurabh.electronic.store.dtos.UserDto;
+import com.developedbysaurabh.electronic.store.entities.Role;
 import com.developedbysaurabh.electronic.store.entities.User;
+import com.developedbysaurabh.electronic.store.exceptions.BadApiRequestException;
 import com.developedbysaurabh.electronic.store.exceptions.ResourceNotFoundException;
 import com.developedbysaurabh.electronic.store.helper.Helper;
+import com.developedbysaurabh.electronic.store.repositories.OrderRepository;
+import com.developedbysaurabh.electronic.store.repositories.RoleRepository;
 import com.developedbysaurabh.electronic.store.repositories.UserRepository;
 import com.developedbysaurabh.electronic.store.services.UserService;
 import org.modelmapper.ModelMapper;
@@ -16,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -32,10 +37,24 @@ public class UserServiceImpl implements UserService {
 
     private UserRepository userRepository;
     private ModelMapper mapper;
+    private PasswordEncoder passwordEncoder;
+
+    private OrderRepository orderRepository;
+    private RoleRepository roleRepository;
+
+    @Value("${normal.role.id}")
+    private String normalRoleId;
+
+    @Value("${superuser2.userId}")
+    private  String super2UserId;
+
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, ModelMapper mapper) {
+    public UserServiceImpl(UserRepository userRepository, ModelMapper mapper, PasswordEncoder passwordEncoder, OrderRepository orderRepository, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.mapper = mapper;
+        this.passwordEncoder = passwordEncoder;
+        this.orderRepository = orderRepository;
+        this.roleRepository = roleRepository;
     }
 
     private Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
@@ -50,7 +69,17 @@ public class UserServiceImpl implements UserService {
         String userId = UUID.randomUUID().toString();
         userDto.setUserId(userId);
 
+        //encode password
+        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
+
         User user = dtoToEntity(userDto);
+
+        //fetch role of normal user and set it to user
+
+        Role role = roleRepository.findById(normalRoleId).orElseThrow(() -> new ResourceNotFoundException("COULD NOT FOUND ROLE FOR GIVEN NORMAL ROLE ID  "));
+
+        user.getRoles().add(role);
+
         User savedUser = userRepository.save(user);
         UserDto newDto = entityToDto(savedUser);
 
@@ -79,6 +108,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(String userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found with given ID "));
+
+
+        if (userHasAdminRole(user)){
+            throw new BadApiRequestException("YOU CAN NOT DELETE SUPER USER !");
+        }
+        else
+        {
+            // Detach roles from the user
+            user.getRoles().clear();
+        }
+
+
 
         //delete user profile image
         String fullImagePath = imageUploadPath + user.getImageName();
@@ -130,6 +171,13 @@ public class UserServiceImpl implements UserService {
         List<UserDto> userDtoList = users.stream().map(user -> entityToDto(user)).collect(Collectors.toList());
         return userDtoList;
     }
+
+
+
+    private boolean userHasAdminRole(User user) {
+        return user.getRoles().stream().anyMatch(role -> "ROLE_ADMIN".equals(role.getRoleName()));
+    }
+
 
 
     private UserDto entityToDto(User user) {

@@ -2,7 +2,6 @@ package com.developedbysaurabh.electronic.store.services;
 
 import com.developedbysaurabh.electronic.store.dtos.PageableResponse;
 import com.developedbysaurabh.electronic.store.dtos.UserDto;
-import com.developedbysaurabh.electronic.store.entities.User;
 
 import java.util.List;
 

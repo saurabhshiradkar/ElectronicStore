@@ -1,12 +1,12 @@
 package com.developedbysaurabh.electronic.store.dtos;
 
-import com.developedbysaurabh.electronic.store.validate.ImageNameValid;
 import lombok.*;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -39,4 +39,6 @@ public class UserDto {
     //Custom  Validator
     //@ImageNameValid
     private String imageName;
+
+    private Set<RoleDto> roles = new HashSet<>();
 }
