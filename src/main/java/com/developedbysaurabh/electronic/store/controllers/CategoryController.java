@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,6 +43,7 @@ public class CategoryController {
 
 
     //create
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CategoryDto categoryDto){
         CategoryDto categoryDto1 = categoryService.create(categoryDto);
@@ -49,6 +51,7 @@ public class CategoryController {
     }
 
     //update
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{categoryId}")
     public ResponseEntity<CategoryDto> updateCategory(
             @PathVariable String categoryId,
@@ -59,6 +62,7 @@ public class CategoryController {
     }
 
     //delete
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{categoryId}")
     public ResponseEntity<ApiResponseMessage> deleteCategory(@PathVariable String categoryId){
         categoryService.delete(categoryId);
@@ -90,8 +94,9 @@ public class CategoryController {
     }
 
     //upload category image
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/image/{categoryId}")
-    public ResponseEntity<ImageResponse> uploadUserImage(@RequestParam("image") MultipartFile image, @PathVariable("categoryId") String categoryId) throws IOException {
+    public ResponseEntity<ImageResponse> uploadCategoryImage(@RequestParam("image") MultipartFile image, @PathVariable("categoryId") String categoryId) throws IOException {
 
         String imageName = fileService.uploadFile(image, imageUploadPath);
 
@@ -123,6 +128,7 @@ public class CategoryController {
 
 
     //create product with category
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{categoryId}/products")
     public  ResponseEntity<ProductDto> createProductWithCategory(
             @PathVariable("categoryId") String categoryId,
@@ -133,6 +139,7 @@ public class CategoryController {
     }
 
     //update category of product
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{categoryId}/products/{productId}")
     public ResponseEntity<ProductDto> updateProductCategory(
             @PathVariable("categoryId") String categoryId,

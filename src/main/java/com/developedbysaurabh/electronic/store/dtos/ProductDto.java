@@ -2,6 +2,8 @@ package com.developedbysaurabh.electronic.store.dtos;
 
 import lombok.*;
 
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import java.util.Date;
 
@@ -12,15 +14,15 @@ import java.util.Date;
 @Builder
 public class ProductDto {
 
-    @NotBlank(message = "Product Id Is Required !")
     private String productId;
     @NotBlank(message = "Title Is Required !")
     private String title;
     private String description;
-    @NotBlank(message = "Price Is Required !")
+    @DecimalMin(value = "0.0", message = "Price must be greater than or equal to 0.0")
     private Double price;
+    @DecimalMin(value = "0.0", message = "Price must be greater than or equal to 0.0")
     private Double discountedPrice = price;
-    @NotBlank(message = "quantity Is Required !")
+    @Min(value = 1, message = "Quantity must be 1 or greater")
     private int quantity;
     private Date addedDate;
     private boolean live;

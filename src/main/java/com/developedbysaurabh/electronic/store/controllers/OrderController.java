@@ -5,6 +5,7 @@ import com.developedbysaurabh.electronic.store.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -28,6 +29,8 @@ public class OrderController {
         return new ResponseEntity<>(orderDto, HttpStatus.CREATED);
     }
 
+    //delete order
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{orderId}")
     public ResponseEntity<ApiResponseMessage> removeOrder(
             @PathVariable String orderId
@@ -52,6 +55,7 @@ public class OrderController {
         return new ResponseEntity<>(ordersOfUser,HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<PageableResponse<OrderDto>> getOrders(
             @RequestParam(value = "pageNumber", defaultValue = "0",required = false ) int pageNumber,
@@ -65,6 +69,7 @@ public class OrderController {
     }
 
     //Assignment Solution: update order
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{orderId}")
     public ResponseEntity<OrderDto> updateOrder(
             @PathVariable("orderId") String orderId,
