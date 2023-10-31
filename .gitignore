@@ -32,5 +32,4 @@ build/
 ### VS Code ###
 .vscode/
 /images/
-/src/main/resources/
-/src/main/resources/application.properties
+/src/main/resources/application-dev.properties
