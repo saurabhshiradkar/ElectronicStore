@@ -5,6 +5,7 @@ import com.developedbysaurabh.electronic.store.security.JwtAuthenticationEntryPo
 import com.developedbysaurabh.electronic.store.security.JwtAuthenticationFilter;
 import com.developedbysaurabh.electronic.store.services.impl.CustomeUserDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,6 +19,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -26,6 +30,18 @@ public class SecurityConfig {
     private CustomeUserDetailService userDetailService;
     private JwtAuthenticationEntryPoint entryPoint;
     private JwtAuthenticationFilter authenticationFilter;
+
+    private final String[] PUBLIC_URLS = {
+
+            "/swagger-ui/**",
+            "/webjars/**",
+            "/swagger-resources/**",
+            "/v3/api-docs",
+            "/v2/api-docs",
+            "/test"
+
+
+    };
 
     @Autowired
     public SecurityConfig(CustomeUserDetailService userDetailService, JwtAuthenticationEntryPoint entryPoint, JwtAuthenticationFilter authenticationFilter) {
@@ -54,17 +70,54 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    //CORS Configuration
+    @Bean
+    public FilterRegistrationBean corsFilter(){
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowCredentials(true);
+//        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
+
+        configuration.addAllowedOriginPattern("*");
+        configuration.addAllowedHeader("Authorization");
+        configuration.addAllowedHeader("Content-Type");
+        configuration.addAllowedHeader("Accept");
+        configuration.addAllowedMethod("GET");
+        configuration.addAllowedMethod("POST");
+        configuration.addAllowedMethod("DELETE");
+        configuration.addAllowedMethod("PUT");
+        configuration.addAllowedMethod("OPTIONS");
+        configuration.setMaxAge(3600L);
+
+        source.registerCorsConfiguration("/**",configuration);
+
+        FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean(new CorsFilter(source));
+
+        filterRegistrationBean.setOrder(-110);
+
+        return filterRegistrationBean;
+    }
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http.cors().disable().csrf().disable()
+//        cors.disable()
+        http.csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/auth/login")
+                .permitAll()
+                .antMatchers("/auth/google")
                 .permitAll()
                 .antMatchers(HttpMethod.POST,"/users")
                 .permitAll()
                 .antMatchers(HttpMethod.DELETE,"/users/**").hasRole("ADMIN")
+                .antMatchers(PUBLIC_URLS)
+                .permitAll()
+                .antMatchers(HttpMethod.GET)
+                .permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
