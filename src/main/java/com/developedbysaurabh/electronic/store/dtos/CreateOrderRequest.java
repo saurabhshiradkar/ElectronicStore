@@ -2,7 +2,7 @@ package com.developedbysaurabh.electronic.store.dtos;
 
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 @Getter
 @Setter
