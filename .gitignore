@@ -33,4 +33,3 @@ build/
 .vscode/
 /images/
 /src/main/resources/
-/src/main/resources/**
