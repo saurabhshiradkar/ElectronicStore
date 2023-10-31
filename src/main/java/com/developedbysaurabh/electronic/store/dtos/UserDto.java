@@ -1,5 +1,6 @@
 package com.developedbysaurabh.electronic.store.dtos;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
@@ -19,6 +20,7 @@ public class UserDto {
     private String userId;
 
     @Size(min = 3, max = 30, message = "Invalid Name !")
+    @Schema( name = "username", required = true,accessMode = Schema.AccessMode.READ_ONLY, description = "user name of new user !!")
     private String name;
 
 //    @Email(message = "Invalid User Email !")

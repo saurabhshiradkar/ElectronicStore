@@ -6,6 +6,12 @@ import com.developedbysaurabh.electronic.store.dtos.PageableResponse;
 import com.developedbysaurabh.electronic.store.dtos.UserDto;
 import com.developedbysaurabh.electronic.store.services.FileService;
 import com.developedbysaurabh.electronic.store.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,14 +23,13 @@ import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
 @RestController
 @RequestMapping("/users")
+@Tag(name = "UserController")
 public class UserController {
     private UserService userService;
     private FileService fileService;
@@ -42,6 +47,12 @@ public class UserController {
 
     //create
     @PostMapping
+    @Operation(summary = "create new user !!")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success | OK"),
+            @ApiResponse(responseCode = "401", description = "not authorized !!"),
+            @ApiResponse(responseCode = "201", description = "new user created !!")
+    })
     public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto)
     {
         UserDto userDto1 = userService.createUser(userDto);
@@ -77,6 +88,7 @@ public class UserController {
 
     //get all
     @GetMapping
+    @Operation(summary = "get all users")
     public ResponseEntity<PageableResponse<UserDto>> getAllUsers(
             @RequestParam(value = "pageNumber", defaultValue = "0",required = false ) int pageNumber,
             @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
@@ -88,6 +100,7 @@ public class UserController {
 
     //get single
     @GetMapping(value = "/{userId}")
+    @Operation(summary = "Get single user by userid !!")
     public ResponseEntity<UserDto> getUser(@PathVariable("userId") String userId){
         return new ResponseEntity<>(userService.getUserById(userId),HttpStatus.OK);
     }
