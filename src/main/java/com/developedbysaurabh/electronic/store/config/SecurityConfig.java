@@ -95,7 +95,7 @@ public class SecurityConfig {
 
         FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean(new CorsFilter(source));
 
-        filterRegistrationBean.setOrder(-110);
+        filterRegistrationBean.setOrder(-200);
 
         return filterRegistrationBean;
     }
@@ -112,8 +112,11 @@ public class SecurityConfig {
                                 .permitAll()
                                 .requestMatchers("/auth/google")
                                 .permitAll()
+                                .requestMatchers(HttpMethod.GET,"users/image/**").hasAnyRole("NORMAL","ADMIN")
+                                .requestMatchers(HttpMethod.POST,"/users/image/**").hasAnyRole("NORMAL","ADMIN")
                                 .requestMatchers(HttpMethod.POST,"/users")
                                 .permitAll()
+                                .requestMatchers(HttpMethod.GET,"/users/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE,"/users/**").hasRole("ADMIN")
                                 .requestMatchers(PUBLIC_URLS)
                                 .permitAll()

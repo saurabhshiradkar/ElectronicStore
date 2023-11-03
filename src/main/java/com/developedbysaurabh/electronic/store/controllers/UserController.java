@@ -55,6 +55,7 @@ public class UserController {
     })
     public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto)
     {
+        logger.info("IN USER CONTROLLER's CREATE USER METHOD");
         UserDto userDto1 = userService.createUser(userDto);
         return new ResponseEntity<>(userDto1, HttpStatus.CREATED);
     }

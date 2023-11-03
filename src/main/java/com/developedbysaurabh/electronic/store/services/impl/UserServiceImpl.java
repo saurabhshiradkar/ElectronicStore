@@ -63,25 +63,30 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(UserDto userDto) {
 
-        //generate unique id in string format
-        String userId = UUID.randomUUID().toString();
-        userDto.setUserId(userId);
+        if (userRepository.existsByEmail(userDto.getEmail())) {
+            throw new BadApiRequestException("Email already in use");
+        }
+        else
+        {
+            //generate unique id in string format
+            String userId = UUID.randomUUID().toString();
+            userDto.setUserId(userId);
 
-        //encode password
-        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
+            //encode password
+            userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
-        User user = dtoToEntity(userDto);
+            User user = dtoToEntity(userDto);
 
-        //fetch role of normal user and set it to user
+            //fetch role of normal user and set it to user
+            Role role = roleRepository.findById(normalRoleId).orElseThrow(() -> new ResourceNotFoundException("COULD NOT FOUND ROLE FOR GIVEN NORMAL ROLE ID  "));
+            user.getRoles().add(role);
 
-        Role role = roleRepository.findById(normalRoleId).orElseThrow(() -> new ResourceNotFoundException("COULD NOT FOUND ROLE FOR GIVEN NORMAL ROLE ID  "));
+            //save user
+            User savedUser = userRepository.save(user);
+            UserDto newDto = entityToDto(savedUser);
 
-        user.getRoles().add(role);
-
-        User savedUser = userRepository.save(user);
-        UserDto newDto = entityToDto(savedUser);
-
-        return newDto;
+            return newDto;
+        }
     }
 
 

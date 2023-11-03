@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -92,18 +91,33 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(apiResponseMessage,HttpStatus.BAD_REQUEST);
     }
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiResponseMessage> handleAccessDeniedException(AccessDeniedException ex)
-    {
-        logger.info("Global Exception Handler : AccessDeniedException Handler Invoked");
-        ApiResponseMessage apiResponseMessage = ApiResponseMessage.builder()
-                .message("ACCESS DENIED ! YOU ARE NOT AUTHORIZED TO ACCESS THIS RESOURCE !")
-                .status(HttpStatus.BAD_REQUEST)
-                .success(false)
-                .build();
+//    @ExceptionHandler(AccessDeniedException.class)
+//    public ResponseEntity<ApiResponseMessage> handleAccessDeniedException(AccessDeniedException ex)
+//    {
+//        logger.info("Global Exception Handler : AccessDeniedException Handler Invoked");
+//        ApiResponseMessage apiResponseMessage = ApiResponseMessage.builder()
+//                .message("ACCESS DENIED ! YOU ARE NOT AUTHORIZED TO ACCESS THIS RESOURCE !")
+//                .status(HttpStatus.BAD_REQUEST)
+//                .success(false)
+//                .build();
+//
+//        return new ResponseEntity<>(apiResponseMessage,HttpStatus.BAD_REQUEST);
+//    }
 
-        return new ResponseEntity<>(apiResponseMessage,HttpStatus.BAD_REQUEST);
-    }
+//    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+//    public ResponseEntity<ApiResponseMessage> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException ex)
+//    {
+//        logger.info("Global Exception Handler : SQLIntegrityConstraintViolationException Handler Invoked");
+//        ApiResponseMessage apiResponseMessage = ApiResponseMessage.builder()
+//                .message("SQLIntegrityConstraintViolationException!  User Already Exist with given email")
+//                .status(HttpStatus.BAD_REQUEST)
+//                .success(false)
+//                .build();
+//
+//        return new ResponseEntity<>(apiResponseMessage,HttpStatus.BAD_REQUEST);
+//    }
 
+
+//    SQLIntegrityConstraintViolationException
 
 }
