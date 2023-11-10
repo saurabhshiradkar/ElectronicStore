@@ -75,7 +75,7 @@ public class AuthController {
         UserDto userDto = mapper.map(userDetails,UserDto.class);
 
         JwtResponse jwtResponse = JwtResponse.builder()
-                .jwtTolken(token)
+                .jwtToken(token)
                 .user(userDto)
                 .build();
         return new ResponseEntity<>(jwtResponse,HttpStatus.OK);
