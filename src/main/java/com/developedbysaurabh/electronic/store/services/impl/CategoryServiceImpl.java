@@ -22,10 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.List;
 import java.util.UUID;
 
@@ -102,12 +99,16 @@ public class CategoryServiceImpl implements CategoryService {
         } catch (NoSuchFileException e) {
             logger.info("Category Cover Image Not Found in folder.");
             e.printStackTrace();
+        }catch (InvalidPathException e){
+            logger.info("Category Cover Image Not Found in folder ! USER DELETED");
+            e.printStackTrace();
         }
         catch (IOException e) {
             e.printStackTrace();
         }
-
-        categoryRepository.delete(category);
+        finally {
+            categoryRepository.delete(category);
+        }
     }
 
     @Override

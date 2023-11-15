@@ -50,12 +50,34 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDto create(ProductDto productDto) {
-        //Generate Random String productId
-        Product product = mapper.map(productDto, Product.class);
+
+        ProductDto productDto2;
+        Product product;
+
+        if (productDto.getCategory() == null){
+                     productDto2 = ProductDto.builder()
+                    .productId(productDto.getProductId())
+                    .price(productDto.getPrice())
+                    .discountedPrice(productDto.getDiscountedPrice())
+                    .description(productDto.getDescription())
+                    .stock(productDto.isStock())
+                    .live(productDto.isLive())
+                    .title(productDto.getTitle())
+                    .productImageName(productDto.getProductImageName())
+                    .build();
+
+            product = mapper.map(productDto2, Product.class);
+        }
+        else {
+            product = mapper.map(productDto, Product.class);
+        }
+
 
         //product id
         String productId = UUID.randomUUID().toString();
         product.setProductId(productId);
+
+
 
         //added
         product.setAddedDate(new Date());
