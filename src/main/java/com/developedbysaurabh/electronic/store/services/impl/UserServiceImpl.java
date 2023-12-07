@@ -36,7 +36,6 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     private ModelMapper mapper;
     private PasswordEncoder passwordEncoder;
-
     private OrderRepository orderRepository;
     private RoleRepository roleRepository;
 
@@ -93,19 +92,69 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto updateUser(UserDto userDto, String userId) {
 
+        logger.info("USER DATA COMING WITH IMAGE :-  " +userDto );
+
+
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found with given ID "));
 
         user.setName(userDto.getName());
         user.setAbout(userDto.getAbout());
         user.setGender(userDto.getGender());
-        user.setPassword(userDto.getPassword());
-        user.setImageName(userDto.getImageName());
 
-        User updatedUser = userRepository.save(user);
+        //encode password
+        if (!userDto.getPassword().equalsIgnoreCase(user.getPassword()))
+            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
-        UserDto updatedUserDto = entityToDto(updatedUser);
+        //delete user profile image if image name in request is not equal to the current image name
+        logger.info("user.getImageName() :- "+user.getImageName());
+        logger.info("userDto.getImageName() :- "+userDto.getImageName());
+        if(user.getImageName()  != userDto.getImageName()){
+            String fullImagePath = imageUploadPath + user.getImageName();
 
-        return updatedUserDto;
+            try
+            {
+                Path path = Paths.get(fullImagePath);
+                Files.delete(path);
+            } catch (NoSuchFileException e) {
+                logger.info("User Image Not Found in folder.");
+                e.printStackTrace();
+            }catch (InvalidPathException e){
+                logger.info("User Image Not Found ! USER DELETED");
+                e.printStackTrace();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+            finally {
+                user.setImageName(userDto.getImageName());
+
+                User updatedUser = userRepository.save(user);
+
+                UserDto updatedUserDto = entityToDto(updatedUser);
+
+                return updatedUserDto;
+            }
+        }else{
+            user.setImageName(userDto.getImageName());
+
+            User updatedUser = userRepository.save(user);
+
+            UserDto updatedUserDto = entityToDto(updatedUser);
+
+            return updatedUserDto;
+
+        }
+
+
+
+//        user.setImageName(userDto.getImageName());
+//
+//        User updatedUser = userRepository.save(user);
+//
+//        UserDto updatedUserDto = entityToDto(updatedUser);
+//
+//        return updatedUserDto;
+
     }
 
     @Override

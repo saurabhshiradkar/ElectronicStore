@@ -4,6 +4,7 @@ import com.developedbysaurabh.electronic.store.dtos.AddItemToCartRequest;
 import com.developedbysaurabh.electronic.store.dtos.ApiResponseMessage;
 import com.developedbysaurabh.electronic.store.dtos.CartDto;
 import com.developedbysaurabh.electronic.store.services.CartService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ public class CartController {
 
     //add items to cart
     @PostMapping("/{userId}")
+    @Operation(summary = "Add Item To Cart!")
     public ResponseEntity<CartDto> addItemToCart(
             @PathVariable("userId") String userId,
             @RequestBody AddItemToCartRequest request
@@ -34,6 +36,7 @@ public class CartController {
     }
 
     @DeleteMapping("/{userId}/items/{itemId}")
+    @Operation(summary = "Remove Item From Cart")
     public ResponseEntity<ApiResponseMessage> removeItemFromCart(
             @PathVariable("itemId") int itemId,
             @PathVariable("userId") String userId
@@ -48,6 +51,7 @@ public class CartController {
     }
 
     @DeleteMapping("/{userId}")
+    @Operation(summary = "Clear Cart")
     public ResponseEntity<ApiResponseMessage> clearCart(
             @PathVariable("userId") String userId
     ){
@@ -61,6 +65,7 @@ public class CartController {
     }
 
     @GetMapping("/{userId}")
+    @Operation(summary = "get user cart !")
     public ResponseEntity<CartDto> getUserCart(
             @PathVariable("userId") String userId
     ){

@@ -33,7 +33,11 @@ public class OrderDto {
 
     private Date deliveredDate;
 
-//    private UserDto user;
+    private UserDto user;
+
+    private String razorPayOrderId;
+
+    private String paymentId;
 
     private List<OrderItemDto> orderItems = new ArrayList<>();
 }

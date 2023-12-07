@@ -35,7 +35,7 @@ public class User implements UserDetails {
     @Column(length = 5000)
     private String about;
 
-    @Column(name = "user_image_name")
+    @Column(name = "user_image_name",length = 5000)
     private String imageName;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)

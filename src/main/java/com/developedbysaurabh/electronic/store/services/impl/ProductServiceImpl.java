@@ -57,6 +57,7 @@ public class ProductServiceImpl implements ProductService {
         if (productDto.getCategory() == null){
                      productDto2 = ProductDto.builder()
                     .productId(productDto.getProductId())
+                    .quantity(productDto.getQuantity())
                     .price(productDto.getPrice())
                     .discountedPrice(productDto.getDiscountedPrice())
                     .description(productDto.getDescription())

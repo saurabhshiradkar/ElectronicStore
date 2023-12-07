@@ -52,7 +52,8 @@ public class CartServiceImpl implements CartService {
         int quantity = request.getQuantity();
         String productId = request.getProductId();
 
-        if (quantity <=0 ){
+
+        if (quantity ==0 ){
             throw new BadApiRequestException("Quantity Can not be Negative or Zero !");
         }
 
@@ -93,19 +94,49 @@ public class CartServiceImpl implements CartService {
 
         items = items.stream().map(item -> {
             if (item.getProduct().getProductId().equals(productId)) {
+
                 //item already exists update quantity
 
-//                logger.info("Products In Stock : {}",item.getProduct().getQuantity());
-//                logger.info("Requested Quantity : {}",(item.getQuantity()+quantity));
-//
-//                if (item.getProduct().getQuantity() < (item.getQuantity()+quantity)){
-//                    throw new BadApiRequestException("Not Enough Stock Exists For Product !");
-//                }
+                if(product.getQuantity()==1 && quantity==1){
+
+                    item.setQuantity(item.getQuantity()+ quantity);
+                    item.setTotalPrice(item.getQuantity()*product.getDiscountedPrice());
+                    updated.set(true);
+
+                    if(quantity==-1){
+                        product.setQuantity((product.getQuantity()+1));
+                    } else if (quantity==1) {
+                        product.setQuantity((product.getQuantity()-1));
+                    }
+
+                    productRepository.save(product);
+                }
+
+
+                if(item.getProduct().getQuantity() == 0 &&  quantity == -1){
+                    product.setQuantity((product.getQuantity()+1));
+                }
+                else if (item.getProduct().getQuantity() < (item.getQuantity()+quantity)){
+                    throw new BadApiRequestException("Not Enough Stock Exists For Product !");
+                }
+
+                if ((item.getQuantity()+ quantity)==0){
+                    throw new BadApiRequestException("Quantity Can not be Negative or Zero !");
+                }
 
                 item.setQuantity(item.getQuantity()+ quantity);
-                item.setTotalPrice(quantity*product.getDiscountedPrice());
+                item.setTotalPrice(item.getQuantity()*product.getDiscountedPrice());
                 updated.set(true);
+
+                if(quantity==-1){
+                    product.setQuantity((product.getQuantity()+1));
+                } else if (quantity==1) {
+                    product.setQuantity((product.getQuantity()-1));
+                }
+
+                productRepository.save(product);
             }
+
 
             return item;
         }).collect(Collectors.toList());
@@ -117,12 +148,17 @@ public class CartServiceImpl implements CartService {
         if (!updated.get()){
             CartItem cartItem = CartItem.builder()
                     .quantity(quantity)
-                    .totalPrice(quantity * product.getPrice())
+                    .totalPrice( quantity * product.getDiscountedPrice())
                     .cart(cart)
                     .product(product)
                     .build();
 
             cart.getItems().add(cartItem);
+
+            if(product.getQuantity()!=0){
+                product.setQuantity((product.getQuantity()-1));
+                productRepository.save(product);
+            }
         }
 
 
@@ -134,7 +170,16 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void removeItemFromCart(String userId, int cartItemId) {
+
         CartItem cartItem = cartItemRepository.findById(cartItemId).orElseThrow(() -> new ResourceNotFoundException("Cart Item Not Found With Given ID !"));
+
+        Product product = cartItem.getProduct();
+        int productQuantityInCartItem = cartItem.getQuantity();
+
+        product.setQuantity(product.getQuantity() + productQuantityInCartItem);
+
+        productRepository.save(product);
+
         cartItemRepository.delete(cartItem);
     }
 
@@ -144,17 +189,57 @@ public class CartServiceImpl implements CartService {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Product Not Found With Given ID !"));
 
         Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new ResourceNotFoundException("Cart Of Given User Not Found !"));
+
+        // Update product quantities and clear the cart items
+        List<CartItem> items = cart.getItems();
+        for (CartItem item : items) {
+            Product product = item.getProduct();
+            int quantity = item.getQuantity();
+
+            // Update product quantity in the database
+            product.setQuantity(product.getQuantity() + quantity);
+            productRepository.save(product);
+        }
+
         cart.getItems().clear();
         cartRepository.save(cart);
     }
 
+//    @Override
+//    public CartDto getCartByUser(String userId) {
+//        //fetch the user from DB
+//        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Product Not Found With Given ID !"));
+//
+//        //fetch cart by user
+//        Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new ResourceNotFoundException("Cart Of Given User Not Found !"));
+//        return mapper.map(cart, CartDto.class);
+//
+//    }
+
     @Override
     public CartDto getCartByUser(String userId) {
-        //fetch the user from DB
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Product Not Found With Given ID !"));
+        // fetch the user from DB
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found With Given ID!"));
 
-        //fetch cart by user
-        Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new ResourceNotFoundException("Cart Of Given User Not Found !"));
+        // fetch cart by user
+        Cart cart = null;
+
+        try {
+            cart = cartRepository.findByUser(user).orElseThrow(); // This will throw NoSuchElementException if not present
+        } catch (NoSuchElementException e) {
+            // Cart not found, create a new one
+            cart = new Cart();
+            cart.setCartId(UUID.randomUUID().toString());
+            cart.setCreatedOn(new Date());
+            cart.setUser(user);
+            // Save the newly created cart
+            cartRepository.save(cart);
+        } catch (Exception e) {
+            e.printStackTrace(); // Handle other exceptions if needed
+        }
+
         return mapper.map(cart, CartDto.class);
     }
+
 }

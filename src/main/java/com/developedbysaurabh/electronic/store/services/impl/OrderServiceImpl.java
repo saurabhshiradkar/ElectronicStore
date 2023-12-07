@@ -10,9 +10,12 @@ import com.developedbysaurabh.electronic.store.exceptions.ResourceNotFoundExcept
 import com.developedbysaurabh.electronic.store.helper.Helper;
 import com.developedbysaurabh.electronic.store.repositories.CartRepository;
 import com.developedbysaurabh.electronic.store.repositories.OrderRepository;
+import com.developedbysaurabh.electronic.store.repositories.ProductRepository;
 import com.developedbysaurabh.electronic.store.repositories.UserRepository;
 import com.developedbysaurabh.electronic.store.services.OrderService;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,8 +34,11 @@ public class OrderServiceImpl implements OrderService {
     private UserRepository userRepository;
     private OrderRepository orderRepository;
 
+    private ProductRepository productRepository;
     private CartRepository cartRepository;
     private ModelMapper mapper;
+
+    private Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
     public OrderServiceImpl(UserRepository userRepository, OrderRepository orderRepository, CartRepository cartRepository, ModelMapper mapper) {
         this.userRepository = userRepository;
@@ -52,7 +58,8 @@ public class OrderServiceImpl implements OrderService {
 
         List<CartItem> cartItems = cart.getItems();
 
-        if(cartItems.size() <=0 ){
+
+        if(cartItems.size() == 0){
             throw new BadApiRequestException("Invalid Number of items in Cart !");
         }
 
@@ -74,6 +81,7 @@ public class OrderServiceImpl implements OrderService {
 
         List<OrderItem> orderItems = cartItems.stream().map(cartItem -> {
 
+
             OrderItem orderItem = OrderItem.builder()
                     .quantity(cartItem.getQuantity())
                     .product(cartItem.getProduct())
@@ -81,7 +89,7 @@ public class OrderServiceImpl implements OrderService {
                     .order(order)
                     .build();
 
-            orderAmount.set(order.getOrderAmount() + orderItem.getTotalPrice());
+            orderAmount.set(orderAmount.get() + orderItem.getTotalPrice());
             return orderItem;
         }).collect(Collectors.toList());
 
@@ -111,6 +119,38 @@ public class OrderServiceImpl implements OrderService {
         order.setDeliveredDate(request.getDeliveredDate());
         Order updatedOrder = orderRepository.save(order);
         return mapper.map(updatedOrder, OrderDto.class);
+    }
+
+    @Override
+    public OrderDto updateOrder(String orderId, OrderDto request) {
+
+        //get the order
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new BadApiRequestException("Invalid update data"));
+
+        order.setBillingName(request.getBillingName().isBlank()?order.getBillingName():request.getBillingName());
+        order.setBillingPhone(request.getBillingPhone().isBlank()?order.getBillingPhone():request.getBillingPhone());
+        order.setBillingAddress(request.getBillingAddress().isBlank()?order.getBillingAddress():request.getBillingAddress());
+        order.setPaymentStatus(request.getPaymentStatus().isBlank()?order.getPaymentStatus():request.getPaymentStatus());
+        order.setOrderStatus(request.getOrderStatus().isBlank()?order.getOrderStatus():request.getOrderStatus());
+        request.getDeliveredDate();
+        order.setDeliveredDate(request.getDeliveredDate());
+
+        order.setRazorPayOrderId(request.getRazorPayOrderId());
+        order.setPaymentId(request.getPaymentId());
+
+        Order updatedOrder = orderRepository.save(order);
+
+        return mapper.map(updatedOrder, OrderDto.class);
+
+    }
+
+    @Override
+    public OrderDto getOrder(String orderId) {
+        Order order = this.orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order Not Found With Given Id"));
+
+        OrderDto orderDto = mapper.map(order, OrderDto.class);
+
+        return orderDto;
     }
 
     @Override

@@ -25,4 +25,7 @@ public interface OrderService {
 
     //Update Order
     OrderDto updateOrder(String orderId, OrderUpdateRequest request);
+    OrderDto updateOrder(String orderId, OrderDto request);
+
+    OrderDto getOrder(String orderId);
 }

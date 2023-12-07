@@ -10,6 +10,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import io.jsonwebtoken.ExpiredJwtException;
 
 import java.nio.file.InvalidPathException;
 import java.util.HashMap;
@@ -91,6 +92,43 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(apiResponseMessage,HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<String> handleJwtExpiredException(ExpiredJwtException ex) {
+        // Handle JWT expired exception
+        return new ResponseEntity<>("JWT has expired", HttpStatus.UNAUTHORIZED);
+    }
+
+
+
+
+
+//    @ExceptionHandler(ExpiredJwtException.class)
+//    public ResponseEntity<ApiResponseMessage> handleExpiredJwtException(ExpiredJwtException ex) {
+//        logger.error("JWT Token Expired", ex);
+//        logger.info("Global Exception Handler : ExpiredJwtException Handler Invoked");
+//        ApiResponseMessage apiResponseMessage = ApiResponseMessage.builder()
+//                .message(ex.getMessage())
+//                .status(HttpStatus.UNAUTHORIZED)
+//                .success(false)
+//                .build();
+//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponseMessage);
+//    }
+
+//    @ExceptionHandler(ExpiredJwtException.class)
+//    public ResponseEntity<ApiResponseMessage> handleExpiredJwtExceptionException(ExpiredJwtException ex)
+//    {
+//        logger.info("Global Exception Handler : ExpiredJwtException Handler Invoked");
+//        ApiResponseMessage apiResponseMessage = ApiResponseMessage.builder()
+//                .message(ex.getMessage())
+//                .status(HttpStatus.UNAUTHORIZED)
+//                .success(false)
+//                .build();
+//
+//        return new ResponseEntity<>(apiResponseMessage,HttpStatus.UNAUTHORIZED);
+//    }
+
+
 //    @ExceptionHandler(AccessDeniedException.class)
 //    public ResponseEntity<ApiResponseMessage> handleAccessDeniedException(AccessDeniedException ex)
 //    {
@@ -103,6 +141,7 @@ public class GlobalExceptionHandler {
 //
 //        return new ResponseEntity<>(apiResponseMessage,HttpStatus.BAD_REQUEST);
 //    }
+
 
 //    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
 //    public ResponseEntity<ApiResponseMessage> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException ex)
